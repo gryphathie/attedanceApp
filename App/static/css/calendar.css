@@ -1,0 +1,156 @@
+.calendar {
+    width: 98%;
+    margin: auto;
+    font-size: 13px;    
+  }
+
+  .calendar tr, .calendar td {
+    border: 2px solid #17a2b8;    
+  }
+
+  .calendar th {
+    padding: 10px;
+    text-align: center;
+    font-size: 18px;
+  }
+
+  .calendar td {
+    width: 200px;
+    height: 150px;
+    padding: 19px 0px 0px 0px;
+  }
+
+  .month {
+    font-size: 25px;
+    background-color: rgb(29, 193, 158);
+    color: aliceblue;
+  }
+
+  .date {
+    font-size: 16px;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    background-color: rgb(204, 204, 204);
+    padding-left: 3px;
+    padding-right: 3px;          
+    border-bottom-right-radius: 5px;
+  }
+
+  ul {
+    height: 100%;
+    padding: 0px 5px 0px 20px;
+  }
+
+  a {
+    color: #17a2b8;
+  }
+
+  .left {
+    float: left;
+  }
+
+  .right {
+    float: right;
+  }
+
+  .btn {
+    outline: none;
+    color: black;
+    background-color: transparent;
+    box-shadow: 0 0 0 0;
+  }
+
+  .clearfix {
+    margin: 15px;
+  }
+
+  .form {
+    margin: auto;
+  }
+
+  .form input, .form select, .form textarea {
+    border-radius: 5px;
+    border: 1px solid #17a2b8;
+    outline: none;
+    background: none;
+    padding: 5px;
+    width: 100%;
+  }
+
+  .mon, .tue, .wed, .thu, .fri{
+    border: 2px #017b77 solid;    
+    background-color: #05aea9;
+    color: white;    
+  }
+
+  
+  .sat, .sun{
+    border: 2px #017b77 solid;    
+    background-color: #A569BD;
+    color: white;    
+  }
+
+  .border-left-indigo {
+    border-left: 0.25rem solid #016b8f;
+  }
+
+  .calendar a{
+    color: #ffffff;
+    font-weight: bold;
+  }
+
+  .calendar .bfs{
+    color: black;
+    background-color: #2db0c1;
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 5px;
+  }
+
+  .calendar .devs{
+    color: black;
+    background-color: #5fab82;
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 5px;
+  }
+
+  .calendar .optional{
+    color: black;
+    background-color: #8b9796;
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 5px;
+  }
+
+  .calendar .all{
+    color: black;
+    background-color: #dde58f;
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 5px;
+  }
+
+  .bfs{
+    color: black;
+    background-color: #2db0c1;
+  }
+
+  .devs{
+    color: black;
+    background-color: #5fab82;
+  }
+
+  .optional{
+    color: black;
+    background-color: #8b9796;
+  }
+
+  .all{
+    color: black;
+    background-color: #dde58f;
+  }
