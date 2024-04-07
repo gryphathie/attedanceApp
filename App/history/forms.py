@@ -22,3 +22,4 @@ class HistoryForm(forms.Form):
     card_number = forms.CharField(max_length=20, required=False)
     date_from = forms.DateField(required=True, widget=forms.TextInput(attrs={'type': 'date', 'value': datetime.now().strftime("%Y-%m-%d")}))
     date_to = forms.DateField(required=True, widget=forms.TextInput(attrs={'type': 'date', 'value': datetime.now().strftime("%Y-%m-%d")}))
+    all_records = forms.BooleanField(required=False, initial=False)

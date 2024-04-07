@@ -116,6 +116,7 @@ class SearchEmployeeAttendance(View):
         card_number = request.POST.get('card_number')
         date_from = request.POST.get('date_from')
         date_to = request.POST.get('date_to')
+        all_records = request.POST.get('all_records')
         date_from = datetime.strptime(date_from, "%Y-%m-%d")
         date_from = timezone.make_aware(date_from, timezone.get_current_timezone())
         date_to = datetime.strptime(date_to, "%Y-%m-%d")
@@ -134,31 +135,20 @@ class SearchEmployeeAttendance(View):
                 Q(start_date__range=[date_from, date_to])
             ).order_by('start_date')            
             
-            history = History.objects.filter(
-                Q(personnel_id__in = [ace]) &                
-                Q(date__range=[date_from, date_to])                       
-            ).order_by('date', 'time') 
+            guest_card_list = list()
+            guest_card_dates = list()
+            for guest in guests: guest_card_list.append(guest.card_number)  
+            for guest_date in guests: guest_card_dates.append([guest_date.start_date, guest_date.end_date])               
 
-            #TODO: Crear otro history que sea exclusivo para las guest card y otra tabla en el template.
-            #Haciendo uso de los card number y las fechas de inicio y fin viendo como juntarlos con el reporte.
-            a = list()
-            for guest in guests: a.append(guest.card_number)
-            
-            history = History.objects.filter(
-                Q(personnel_id__in = [ace]) |
-                Q(card_number__in=a) &
-                Q(date__range=[date_from, date_to])                       
-            ).order_by('date', 'time')
+            if not all_records:
+                history = self.get_history_not_all(history, guests, ace, date_from, date_to, False, None)
+            else:
+                history = self.get_history_all(history, guests, ace, date_from, date_to, False, None)
 
 
         elif card_number != "":
             print("Normal CARD")
             employee = Employee.objects.filter(Q(card_number1__icontains=card_number) | Q(card_number2__icontains=card_number) | Q(card_number3__icontains=card_number)).first()
-            history = History.objects.filter(
-                Q(card_number__in=[card_number]) &
-                Q(date__range=[date_from, date_to])                       
-            ).order_by('date', 'time')  
-
             leaves = Leave.objects.filter(
                 Q(employee__in=[employee]) &
                 Q(start_date__range=[date_from, date_to])
@@ -168,6 +158,12 @@ class SearchEmployeeAttendance(View):
                 Q(employee__in=[employee]) &
                 Q(start_date__range=[date_from, date_to])
             ).order_by('start_date')
+
+            if not all_records:                
+                history = self.get_history_not_all(history, guests, ace, date_from, date_to, True, card_number)
+            else:
+                history = self.get_history_all(history, guests, ace, date_from, date_to, True, card_number)
+
 
         if "generate_report" in self.request.POST:
             print("Generate report")
@@ -183,3 +179,48 @@ class SearchEmployeeAttendance(View):
         }
         return render(request, 'history/search_attendance.html', context)
 
+    def get_history_not_all(self, history, guests, ace, date_from, date_to, card_flag, card_number):
+        if card_flag:
+            history = History.objects.filter(
+                Q(card_number__in=[card_number]) &
+                Q(date__range=[date_from, date_to])                       
+            ).order_by('date', 'time').distinct("date")  
+        else:
+            history = History.objects.filter(                
+                    Q(personnel_id__in = [ace]) &             
+                    Q(date__range=[date_from, date_to])                       
+                ).order_by('date', 'time').distinct('date')
+
+        data_combined = history
+        n = 0
+        for guest in guests:                
+            h = History.objects.filter(
+                Q(card_number__in=[guest.card_number]) &
+                Q(date__range=[guest.start_date, guest.end_date])
+            ).distinct("date")
+            data_combined = data_combined.union(h)                    
+            n+=1        
+        return data_combined.order_by('date', 'time')  
+    
+    def get_history_all(self, history, guests, ace, date_from, date_to, card_flag, card_number):
+        if card_flag:
+            history = History.objects.filter(
+                Q(card_number__in=[card_number]) &
+                Q(date__range=[date_from, date_to])                       
+            ).order_by('date', 'time')  
+        else:
+            history = History.objects.filter(                
+                    Q(personnel_id__in = [ace]) &             
+                    Q(date__range=[date_from, date_to])                       
+            )
+
+        data_combined = history
+        n = 0
+        for guest in guests:                
+            h = History.objects.filter(
+                Q(card_number__in=[guest.card_number]) &
+                Q(date__range=[guest.start_date, guest.end_date])
+            )                    
+            data_combined = data_combined.union(h)
+            n+=1
+        return data_combined.order_by('date', 'time')

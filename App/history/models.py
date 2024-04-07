@@ -15,7 +15,7 @@ class History(models.Model):
     event_description = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
-        return str(self.date_time)
+        return str(self.date)
 
 
 class Csv(models.Model):
