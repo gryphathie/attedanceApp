@@ -208,5 +208,25 @@
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="//cdn.jsdelivr.net/timepicker.js/latest/timepicker.min.js"></script>
+<script>
+  var employee = document.getElementById("id_name");
+  $("#id_name").change(function(){
+    EnableCardNumberField(employee.value)
+  })
+
+  $(document).ready(function(){
+    EnableCardNumberField(employee.value)
+  })
+
+  function EnableCardNumberField(employee_name){
+    var cardnumber = $("#card_number");
+    if (employee_name !== ''){
+      document.getElementById("id_card_number").disabled = true;
+    }
+    else{
+      document.getElementById("id_card_number").disabled = false;
+    }
+  }
+</script>
 
 {% endblock %}
