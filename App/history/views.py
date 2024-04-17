@@ -1,14 +1,15 @@
 from django.shortcuts import render
-from django.views.generic import View
+from django.views.generic import View, ListView
 from django.contrib import messages
-from .forms import CsvForm, HistoryForm
+from .forms import CsvForm, HistoryForm, AttendanceTimeForm
 from .models import Csv, History
 from user.models import Employee, Leave, Guest
 from django.db.models.query import Q
 import pandas as pd
 from datetime import datetime
 from django.utils import timezone
-import csv, xlrd
+from calendar_app.models import CalendarDay
+import csv, xlrd, calendar
 
 class CsvHistoryView(View):
     def get(self, request):
@@ -224,3 +225,77 @@ class SearchEmployeeAttendance(View):
             data_combined = data_combined.union(h)
             n+=1
         return data_combined.order_by('date', 'time')
+
+
+class AttendanceTable(View):
+    def get(self, request):       
+        # employees = Employee.objects.all()        
+        form = AttendanceTimeForm()
+        context = {
+            'form': form,
+            # 'employees': employees,
+        }
+        return render(request, 'history/attendance_table.html', context)
+
+    
+    def post(self, request):
+        form = AttendanceTimeForm(request.POST)
+        employees = None
+        devs_days = 0
+        bfs_days = 0
+        devs_list = list()
+        bfs_list = list()
+        month = request.POST.get("date_month")
+        year = request.POST.get("date_year")
+        team = request.POST.get("teams")
+        first_day = datetime(int(year), int(month), 1)
+        last_day = datetime(int(year),int(month), calendar.monthrange(int(year), int(month))[1])
+        teams_calendar = CalendarDay.objects.filter(
+            Q(datetime__range=[first_day, last_day])
+        )
+        print(teams_calendar)
+
+        if team == "DEVS":
+            employees = Employee.objects.filter(team="DEVS")
+            teams_calendar = teams_calendar.filter(
+                Q(team__in=["DEVS", "All"])
+            ).order_by("name")
+            devs_days = teams_calendar.count()
+
+            for employee in employees:
+                history = History.objects.filter(
+                    Q(card_number__in=[employee.card_number1,employee.card_number2,employee.card_number3]),
+                    Q(date__range=[first_day,last_day])
+                ).order_by("date", "time").distinct("date")
+                leaves = Leave.objects.filter(
+                    Q(employee=employee),
+                    Q(start_date__range=[first_day,last_day])
+                )
+                devs_list.append([employee.name, employee.ace, employee.team, leaves.count(),(history.count()/devs_days)*100, ((history.count()+leaves.count())/devs_days)*100])
+        elif team == "BFS":
+            employees = Employee.objects.filter(team="BFS")
+            teams_calendar = teams_calendar.filter(
+                Q(team__in=["BFS", "All"])
+            )
+            bfs_days = teams_calendar.count()
+        else:
+            employees = Employee.objects.all()
+            devs_days = teams_calendar.filter(
+                    Q(team__in=["DEVS", "All"])
+                ).count()
+            bfs_days = teams_calendar.filter(
+                    Q(team__in=["BFS", "All"])
+                ).count()
+        
+        print(devs_days, bfs_days)
+        print(devs_list)
+
+        #TODO: importar el modelo de Calendario para compararlo
+        #con los días que correspondían a cada equipo y sacar los %
+
+
+        context = {
+            'form': form,
+            'employees': devs_list,
+        }
+        return render(request, 'history/attendance_table.html', context)
