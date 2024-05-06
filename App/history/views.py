@@ -259,7 +259,7 @@ class AttendanceTable(View):
             employees = Employee.objects.filter(team="DEVS")
             teams_calendar = teams_calendar.filter(
                 Q(team__in=["DEVS", "All"])
-            ).order_by("name")
+            ).order_by("datetime")
             devs_days = teams_calendar.count()
 
             for employee in employees:
@@ -276,18 +276,53 @@ class AttendanceTable(View):
             employees = Employee.objects.filter(team="BFS")
             teams_calendar = teams_calendar.filter(
                 Q(team__in=["BFS", "All"])
-            )
+            ).order_by("datetime")
             bfs_days = teams_calendar.count()
+
+            for employee in employees:
+                history = History.objects.filter(
+                    Q(card_number__in=[employee.card_number1,employee.card_number2,employee.card_number3]),
+                    Q(date__range=[first_day,last_day])
+                ).order_by("date", "time").distinct("date")
+                leaves = Leave.objects.filter(
+                    Q(employee=employee),
+                    Q(start_date__range=[first_day,last_day])
+                )
+                devs_list.append([employee.name, employee.ace, employee.team, leaves.count(),(history.count()/bfs_days)*100, ((history.count()+leaves.count())/bfs_days)*100])
         else:
-            employees = Employee.objects.all()
+            devs_employees = Employee.objects.filter(team="DEVS")
+            bfs_employees = Employee.objects.filter(team="BFS")
             devs_days = teams_calendar.filter(
                     Q(team__in=["DEVS", "All"])
                 ).count()
             bfs_days = teams_calendar.filter(
                     Q(team__in=["BFS", "All"])
                 ).count()
+            
+            for employee_d in devs_employees:
+                history = History.objects.filter(
+                    Q(card_number__in=[employee_d.card_number1,employee_d.card_number2,employee_d.card_number3]),
+                    Q(date__range=[first_day,last_day])
+                ).order_by("date", "time").distinct("date")
+                leaves = Leave.objects.filter(
+                    Q(employee=employee_d),
+                    Q(start_date__range=[first_day,last_day])
+                )
+                devs_list.append([employee_d.name, employee_d.ace, employee_d.team, leaves.count(),(history.count()/devs_days)*100, ((history.count()+leaves.count())/devs_days)*100])
         
-        print(devs_days, bfs_days)
+            for employee_b in bfs_employees:
+                history = History.objects.filter(
+                    Q(card_number__in=[employee_b.card_number1,employee_b.card_number2,employee_b.card_number3]),
+                    Q(date__range=[first_day,last_day])
+                ).order_by("date", "time").distinct("date")
+                leaves = Leave.objects.filter(
+                    Q(employee=employee_b),
+                    Q(start_date__range=[first_day,last_day])
+                )
+                devs_list.append([employee_b.name, employee_b.ace, employee_b.team, leaves.count(),(history.count()/bfs_days)*100, ((history.count()+leaves.count())/bfs_days)*100])
+            devs_list = sorted(devs_list, key=lambda x:x[0])
+
+        # print(devs_days, bfs_days)
         print(devs_list)
 
         #TODO: importar el modelo de Calendario para compararlo
